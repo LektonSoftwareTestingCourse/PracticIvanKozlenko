@@ -13,6 +13,7 @@ name: CI Pipeline
 # PR — только для инфраструктурных изменений от преподавателей в эталонном репозитории.
 
 on:
+  workflow_dispatch:
   push:
     branches:
     - '**'
