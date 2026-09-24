@@ -1,0 +1,12 @@
+card_status: ACTIVE, INACTIVE, BLOCKED, EXPIRED
+amount_vs_daily: below, equal, above
+amount_vs_monthly: below, equal, above
+amount_vs_balance: below, equal, above
+expiry: future, current_month, expired
+terminal_type: pos, atm, ecom
+mcc: grocery, restaurant, electronics, travel
+
+IF [card_status] <> "ACTIVE" THEN [amount_vs_daily] = "below"
+    AND [amount_vs_monthly] = "below" AND [amount_vs_balance] = "below";
+
+IF [expiry] = "expired" THEN [amount_vs_balance] = "below";
