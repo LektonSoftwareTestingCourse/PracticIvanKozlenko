@@ -1,0 +1,39 @@
+bin: registered_valid, unregistered_valid, invalid_format
+cardholder_name: valid, empty, invalid_chars
+currency_code: rub_643, other_3digits, invalid_format
+daily_limit: positive, zero, negative
+monthly_limit: above_daily, equal_daily, below_daily, negative
+initial_balance: positive, zero, negative
+outbox: available, unavailable
+
+IF [bin] <> "registered_valid" THEN [cardholder_name] = "valid"
+    AND [currency_code] <> "invalid_format" AND [daily_limit] <> "negative"
+    AND [monthly_limit] <> "negative" AND [initial_balance] <> "negative"
+    AND [outbox] = "available";
+IF [cardholder_name] <> "valid" THEN [bin] = "registered_valid"
+    AND [currency_code] <> "invalid_format" AND [daily_limit] <> "negative"
+    AND [monthly_limit] <> "negative" AND [initial_balance] <> "negative"
+    AND [outbox] = "available";
+IF [currency_code] = "invalid_format" THEN [bin] = "registered_valid"
+    AND [cardholder_name] = "valid" AND [daily_limit] <> "negative"
+    AND [monthly_limit] <> "negative" AND [initial_balance] <> "negative"
+    AND [outbox] = "available";
+IF [daily_limit] = "negative" THEN [bin] = "registered_valid"
+    AND [cardholder_name] = "valid" AND [currency_code] <> "invalid_format"
+    AND [monthly_limit] <> "negative" AND [initial_balance] <> "negative"
+    AND [outbox] = "available";
+IF [monthly_limit] = "negative" THEN [bin] = "registered_valid"
+    AND [cardholder_name] = "valid" AND [currency_code] <> "invalid_format"
+    AND [daily_limit] <> "negative" AND [initial_balance] <> "negative"
+    AND [outbox] = "available";
+IF [initial_balance] = "negative" THEN [bin] = "registered_valid"
+    AND [cardholder_name] = "valid" AND [currency_code] <> "invalid_format"
+    AND [daily_limit] <> "negative" AND [monthly_limit] <> "negative"
+    AND [outbox] = "available";
+
+IF [outbox] = "unavailable" THEN [bin] = "registered_valid"
+    AND [cardholder_name] = "valid" AND [currency_code] <> "invalid_format"
+    AND [daily_limit] <> "negative" AND [monthly_limit] <> "negative"
+    AND [initial_balance] <> "negative";
+
+IF [daily_limit] = "zero" THEN [monthly_limit] <> "below_daily";
