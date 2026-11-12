@@ -61,4 +61,3 @@ flowchart TB
 | Merchant → БД | [MerchantRepository](../../../services/merchant-acquirer/src/main/java/com/processing/merchantacquirer/repository/MerchantRepository.java), [TerminalRepository](../../../services/merchant-acquirer/src/main/java/com/processing/merchantacquirer/repository/TerminalRepository.java), [AcquirerFeeRepository](../../../services/merchant-acquirer/src/main/java/com/processing/merchantacquirer/repository/AcquirerFeeRepository.java) |
 | AMQP → Logger → БД | [TransactionLogListener](../../../services/transaction-logger/src/main/java/com/processing/transactionlogger/listener/TransactionLogListener.java), [TransactionService](../../../services/transaction-logger/src/main/java/com/processing/transactionlogger/service/TransactionService.java) |
 | AMQP → Notification → БД | [CardEventListener](../../../services/notification-service/src/main/java/com/processing/notification/listener/CardEventListener.java) |
-

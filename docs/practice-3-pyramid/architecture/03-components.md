@@ -83,4 +83,3 @@ flowchart TB
 | Чтение outbox → публикация | [OutboxProcessor](../../../services/card-management/src/main/java/com/processing/cardmanagement/services/OutboxProcessor.java), [OutboxEventProcessorImpl](../../../services/card-management/src/main/java/com/processing/cardmanagement/services/OutboxEventProcessorImpl.java), [RabbitMQConfig](../../../services/card-management/src/main/java/com/processing/cardmanagement/config/RabbitMQConfig.java) |
 
 Не все изменения автоматически дают одно событие: публикуются только классы, реализующие `CardOutboxEvent`. Например, [CardServiceCreationEvent](../../../services/card-management/src/main/java/com/processing/cardmanagement/events/CardServiceCreationEvent.java) содержит количество созданных карт, а не PAN
-
