@@ -1,0 +1,120 @@
+name: practice5
+
+services:
+  postgres:
+    extends:
+      file: docker-compose.yaml
+      service: postgres
+    container_name: practice5-postgres
+    ports: !override
+      - "127.0.0.1:15432:5432"
+  rabbitmq:
+    extends:
+      file: docker-compose.yaml
+      service: rabbitmq
+    container_name: practice5-rabbitmq
+    healthcheck:
+      start_period: 180s
+    ports: !override
+      - "127.0.0.1:15672:5672"
+  gateway:
+    extends:
+      file: docker-compose.yaml
+      service: gateway
+    container_name: practice5-gateway
+    ports: !override
+      - "127.0.0.1:18080:8080"
+    image: practice5/gateway:local
+    healthcheck:
+      start_period: 300s
+  card-management:
+    extends:
+      file: docker-compose.yaml
+      service: card-management
+    container_name: practice5-card-management
+    ports: !override
+      - "127.0.0.1:18081:8080"
+    image: practice5/card-management:local
+    healthcheck:
+      start_period: 300s
+  switch:
+    extends:
+      file: docker-compose.yaml
+      service: switch
+    container_name: practice5-switch
+    ports: !override
+      - "127.0.0.1:18082:8080"
+    image: practice5/switch:local
+    healthcheck:
+      start_period: 300s
+  authorization:
+    extends:
+      file: docker-compose.yaml
+      service: authorization
+    container_name: practice5-authorization
+    ports: !override
+      - "127.0.0.1:18083:8080"
+    image: practice5/authorization:local
+    healthcheck:
+      start_period: 300s
+  merchant-acquirer:
+    extends:
+      file: docker-compose.yaml
+      service: merchant-acquirer
+    container_name: practice5-merchant-acquirer
+    ports: !override
+      - "127.0.0.1:18084:8080"
+    image: practice5/merchant-acquirer:local
+    healthcheck:
+      start_period: 300s
+  terminal-simulator:
+    extends:
+      file: docker-compose.yaml
+      service: terminal-simulator
+    container_name: practice5-terminal-simulator
+    ports: !override
+      - "127.0.0.1:18085:8080"
+    image: practice5/terminal-simulator:local
+    healthcheck:
+      start_period: 300s
+  transaction-logger:
+    extends:
+      file: docker-compose.yaml
+      service: transaction-logger
+    container_name: practice5-transaction-logger
+    ports: !override
+      - "127.0.0.1:18088:8080"
+    image: practice5/transaction-logger:local
+    healthcheck:
+      start_period: 300s
+  bin-lookup:
+    extends:
+      file: docker-compose.yaml
+      service: bin-lookup
+    container_name: practice5-bin-lookup
+    ports: !override
+      - "127.0.0.1:18096:8080"
+    image: practice5/bin-lookup:local
+    healthcheck:
+      start_period: 300s
+
+  limited-gateway:
+    extends:
+      file: docker-compose.yaml
+      service: gateway
+    profiles: [rate-limit]
+    container_name: practice5-limited-gateway
+    image: practice5/gateway:local
+    ports: !override
+      - "127.0.0.1:18090:8080"
+    environment:
+      TRANSACTIONS_RATE_LIMIT_CAPACITY: "1"
+      TRANSACTIONS_RATE_LIMIT_REFILL_PER_SECOND: "1"
+    healthcheck:
+      start_period: 300s
+
+networks:
+  smp-network:
+    driver: bridge
+volumes:
+  pg_data:

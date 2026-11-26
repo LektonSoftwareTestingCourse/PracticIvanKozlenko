@@ -1,0 +1,65 @@
+name: Practice 5 API contracts
+on:
+  push:
+    branches: ['practice-5-*']
+  pull_request:
+    paths:
+      - 'services/**'
+      - '*compose*.yaml'
+      - '.env.example'
+      - '.github/workflows/practice-5-api.yml'
+  workflow_dispatch:
+
+jobs:
+  api-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: Start the practice stack
+        run: |
+          docker compose --env-file .env.example -f compose.practice5.yaml up -d --wait --wait-timeout 240 postgres rabbitmq
+          docker compose --env-file .env.example -f compose.practice5.yaml up --build --wait --wait-timeout 480
+      - name: Three baseline runs
+        shell: bash
+        run: |
+          for run in 1 2 3; do
+            mvn -B -f services/pom.xml -Papi-tests -pl api-tests "-Dapi.reports=$GITHUB_WORKSPACE/services/api-tests/target/practice-5/baseline-$run" test
+          done
+      - name: Rate limit
+        run: |
+          docker compose --env-file .env.example -f compose.practice5.yaml --profile rate-limit up -d --wait --wait-timeout 480 limited-gateway
+          mvn -B -f services/pom.xml -Papi-tests -pl api-tests -Dtest=RateLimitTest -Dlimited.url=http://localhost:18090 "-Dapi.reports=$GITHUB_WORKSPACE/services/api-tests/target/practice-5/rate-limit" test
+      - name: Broker unavailable
+        run: |
+          docker compose --env-file .env.example -f compose.practice5.yaml stop rabbitmq
+          mvn -B -f services/pom.xml -Papi-tests -pl api-tests -Dtest=BrokerRollbackTest -Dbroker.offline=true "-Dapi.reports=$GITHUB_WORKSPACE/services/api-tests/target/practice-5/rollback" test
+          docker compose --env-file .env.example -f compose.practice5.yaml up -d --wait --wait-timeout 480 rabbitmq
+      - name: Switch unavailable
+        run: |
+          docker compose --env-file .env.example -f compose.practice5.yaml stop switch
+          mvn -B -f services/pom.xml -Papi-tests -pl api-tests -Dtest=DownstreamFailureTest -Dswitch.offline=true "-Dapi.reports=$GITHUB_WORKSPACE/services/api-tests/target/practice-5/switch-unavailable" test
+          docker compose --env-file .env.example -f compose.practice5.yaml up -d --wait --wait-timeout 480 switch
+      - name: Cards unavailable
+        run: |
+          docker compose --env-file .env.example -f compose.practice5.yaml stop card-management
+          mvn -B -f services/pom.xml -Papi-tests -pl api-tests -Dtest=CardServiceFailureTest -Dcards.offline=true "-Dapi.reports=$GITHUB_WORKSPACE/services/api-tests/target/practice-5/cards-unavailable" test
+      - name: Save diagnostics
+        if: always()
+        run: |
+          mkdir -p services/api-tests/target/practice-5
+          docker compose --env-file .env.example -f compose.practice5.yaml ps --all > services/api-tests/target/practice-5/compose-state.log
+          docker compose --env-file .env.example -f compose.practice5.yaml logs --no-color > services/api-tests/target/practice-5/compose.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: practice-5-surefire
+          path: services/api-tests/target/practice-5/
+      - name: Remove the practice stack
+        if: always()
+        run: docker compose --env-file .env.example -f compose.practice5.yaml --profile rate-limit down --volumes --remove-orphans
